@@ -1,0 +1,15 @@
+#
+# Ansible to provision HashiCorp Vault on remote host
+#
+- hosts: all
+  become: yes
+  become_method: sudo
+  gather_facts: no
+  pre_tasks:
+    - name: Wait up to 600 seconds for EC2 bootstrap
+      wait_for_connection:
+        timeout: 600
+    - name: Gather facts
+      setup:
+  roles:
+    - ehime.vault

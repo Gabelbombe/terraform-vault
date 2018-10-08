@@ -108,7 +108,7 @@ terraform.tfstate*
 # Randoms
 *.DS_Store*
 ec2-key*
-ansible/roles/
+ansible/roles/*
 *.crt
 *.csr
 *.key

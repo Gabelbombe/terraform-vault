@@ -1,0 +1,4 @@
+---
+  - src: https://github.com/ehime/ansible-role-vault
+    version: HEAD
+    name: ehime.vault
