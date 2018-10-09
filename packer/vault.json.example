@@ -15,22 +15,26 @@
     "name": "vault",
     "type": "amazon-ebs",
     "region": "{{ user `builder_region` }}",
+
     "source_ami_filter": {
       "filters": {
-        "name": "CentOS Linux 7 x86_64 HVM EBS *"
+        "virtualization-type": "hvm",
+        "name": "ubuntu/images/*ubuntu-xenial-16.04-amd64-server-*",
+        "root-device-type": "ebs"
       },
-      "owners": [ "410186602215" ],
+      "owners": ["099720109477"],
       "most_recent": true
     },
 
     "instance_type": "t2.small",
-    "ssh_username": "centos",
+    "ssh_username": "ubuntu",
     "ami_name": "Vault {{ user `vault_version` }} AMI {{ timestamp }}",
     "ami_description": "Vault {{ user `vault_version` }} AMI {{ timestamp }}",
     "ami_users": "{{ user `ami_users` }}",
     "ami_regions": "{{ user `ami_regions` }}",
     "vpc_id": "{{ user `builder_vpc_id` }}",
     "subnet_id": "{{ user `builder_subnet_id` }}",
+
     "launch_block_device_mappings": [{
       "device_name": "/dev/sda1",
       "volume_size": 12,
@@ -39,8 +43,8 @@
     }],
 
     "tags": {
-      "Name": "Vault {{ user `vault_version` }} AMI {{ timestamp }}",
-      "os": "CentOS7",
+      "name": "Vault {{ user `vault_version` }} AMI {{ timestamp }}",
+      "os": "UbuntuXenial",
       "build_date": "{{ timestamp }}",
       "vault_version": "{{ user `vault_version` }}"
     }
@@ -48,8 +52,11 @@
 
   "provisioners": [{
     "type": "ansible",
-    "user": "centos",
-    "extra_arguments": [ "--extra-vars", "vault_version={{ user `vault_version` }} vault_version_checksum={{ user `vault_version_checksum` }}" ],
+    "user": "ubuntu",
+    "extra_arguments": [
+      "--extra-vars", "vault_version={{ user `vault_version` }} vault_version_checksum={{ user `vault_version_checksum` }}",
+      "-v"
+    ],
     "ansible_env_vars": [ "ANSIBLE_SSH_ARGS='-o GSSAPIAuthentication=no -o UserKnownHostsFile=/dev/null'" ],
     "playbook_file": "./ansible/vault.yml"
   }]
