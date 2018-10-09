@@ -115,3 +115,5 @@ ansible/roles/*
 *.ovpn
 *.pub
 *.pem
+
+vault.json

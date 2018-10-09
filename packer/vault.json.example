@@ -1,7 +1,7 @@
 {
   "variables": {
     "copyright" : "Copyright (c) 2018 Jd Daniel",
-    "license" : "The GNU Public License version 3 License (GPLv3)",
+    "license" : "The GNU Public License version 3 (GPLv3)",
     "vault_version": "0.8.3",
     "vault_version_checksum": "sha256:a3b687904cd1151e7c7b1a3d016c93177b33f4f9ce5254e1d4f060fca2ac2626",
     "builder_region": "us-west-1",
@@ -14,13 +14,12 @@
   "builders": [{
     "name": "vault",
     "type": "amazon-ebs",
-    "region": "{{ user `vault_version` }}",
+    "region": "{{ user `builder_region` }}",
     "source_ami_filter": {
       "filters": {
         "name": "CentOS Linux 7 x86_64 HVM EBS *"
       },
-
-      "owners": ["410186602215"],
+      "owners": [ "410186602215" ],
       "most_recent": true
     },
 
@@ -30,29 +29,28 @@
     "ami_description": "Vault {{ user `vault_version` }} AMI {{ timestamp }}",
     "ami_users": "{{ user `ami_users` }}",
     "ami_regions": "{{ user `ami_regions` }}",
-    "vpc_id": "{{user `builder_vpc_id`}}",
-    "subnet_id": "{{user `builder_subnet_id`}}",
-    "launch_block_device_mappings": [
-      {
-        "device_name": "/dev/sda1",
-        "volume_size": 12,
-        "volume_type": "gp2",
-        "delete_on_termination": true
-      }
-    ],
+    "vpc_id": "{{ user `builder_vpc_id` }}",
+    "subnet_id": "{{ user `builder_subnet_id` }}",
+    "launch_block_device_mappings": [{
+      "device_name": "/dev/sda1",
+      "volume_size": 12,
+      "volume_type": "gp2",
+      "delete_on_termination": true
+    }],
+
     "tags": {
-        "Name": "Vault {{user `vault_version`}} AMI {{ timestamp }}",
-        "os": "CentOS7",
-        "build_date": "{{ timestamp }}",
-        "vault_version": "{{user `vault_version`}}"
-      }
+      "Name": "Vault {{ user `vault_version` }} AMI {{ timestamp }}",
+      "os": "CentOS7",
+      "build_date": "{{ timestamp }}",
+      "vault_version": "{{ user `vault_version` }}"
+    }
   }],
 
   "provisioners": [{
     "type": "ansible",
     "user": "centos",
-    "extra_arguments": [ "--extra-vars", "vault_version={{ user `vault_version` }} vault_version_checksum={ {user `vault_version_checksum` }}" ],
+    "extra_arguments": [ "--extra-vars", "vault_version={{ user `vault_version` }} vault_version_checksum={{ user `vault_version_checksum` }}" ],
     "ansible_env_vars": [ "ANSIBLE_SSH_ARGS='-o GSSAPIAuthentication=no -o UserKnownHostsFile=/dev/null'" ],
-    "playbook_file": "../ansible/vault.yml"
+    "playbook_file": "./ansible/vault.yml"
   }]
 }
