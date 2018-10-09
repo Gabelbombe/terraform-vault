@@ -6,12 +6,11 @@ module "us-west" {
   source = "modules/vault"
 
   # Environment
-  env            = "${ var.env }"
-  region         = "${ var.region }"
-  dr_region      = "${ var.dr_region }"
-  aws_account_id = "${ var.aws_account_id }"
-  tags           = "${ var.tags }"
-  tags_asg       = "${ var.tags_asg }"
+  env       = "${ var.env }"
+  region    = "${ var.region }"
+  dr_region = "${ var.dr_region }"
+  tags      = "${ var.tags }"
+  tags_asg  = "${ var.tags_asg }"
 
   # Networking
   vault_dns_address         = "${ var.vault_dns_address }"

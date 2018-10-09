@@ -2,6 +2,8 @@
 ## S3 ######################
 ############################
 
+data "aws_caller_identity" "current" {}
+
 data "aws_iam_policy_document" "s3_trust_policy" {
   statement {
     effect = "Allow"
@@ -213,8 +215,8 @@ data "aws_iam_policy_document" "vault_ec2_policy" {
     ]
 
     resources = [
-      "arn:aws:dynamodb:${ var.region }:${ var.aws_account_id }:table/${ var.dynamodb_table_name }",
-      "arn:aws:dynamodb:${ var.region }:${ var.aws_account_id }:table/${ var.dynamodb_table_name }/*",
+      "arn:aws:dynamodb:${ var.region }:${ data.aws_caller_identity.current.account_id }:table/${ var.dynamodb_table_name }",
+      "arn:aws:dynamodb:${ var.region }:${ data.aws_caller_identity.current.account_id }:table/${ var.dynamodb_table_name }/*",
     ]
   }
 }

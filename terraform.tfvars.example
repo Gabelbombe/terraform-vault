@@ -5,7 +5,6 @@
 env            = "prod"
 region         = "us-west-1"
 dr_region      = "us-west-2"
-aws_account_id = "123456789012"
 
 # Tags and tags_asg must be duplicated to handle the
 # map expected for most terraform tag blocks and list
