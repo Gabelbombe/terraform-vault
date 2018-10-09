@@ -48,7 +48,8 @@ keypair:
 ansible-roles:
 	ansible-galaxy install -r ansible/requirements.yml
 
-
+# aws --profile GEHC-030 --region us-west-2 ec2 describe-vpcs |jq -r '.[] | first | .VpcId' ##First VPC Id
+# aws --profile GEHC-030 --region us-west-2 ec2 describe-subnets --filters 'Name=vpc-id,Values=^whatevers up there' |jq -r '.[] | first | .SubnetId'
 build: require-packer
 	aws-vault exec $(TF_VAR_aws_profile) --assume-role-ttl=60m -- "/usr/local/bin/packer" "build" "packer/vault.json"
 
