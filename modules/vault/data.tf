@@ -3,7 +3,7 @@
 data "aws_elb_service_account" "elb_sa" {}
 
 data "template_file" "userdata" {
-  template = "${ file( "${path.module}/files/userdata.sh" ) }"
+  template = "${ file( "${path.module}/_files/user_data.sh" ) }"
 
   vars {
     env                         = "${ var.env }"
@@ -14,7 +14,7 @@ data "template_file" "userdata" {
 }
 
 data "template_file" "vault_config" {
-  template = "${ file( "${path.module}/files/config.hcl" ) }"
+  template = "${ file( "${path.module}/_files/config.hcl" ) }"
 
   vars {
     env                    = "${ var.env }"
