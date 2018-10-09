@@ -1,4 +1,4 @@
-TF_VAR_pub_key 			:= $(shell cat _keys/ec2-key.pub)
+TF_VAR_pub_key 			:= $(shell cat _keys/vault-key.pub)
 ANSIBLE_ROLES_PATH 	:= ./ansible/roles
 ANSIBLE_CONFIG 			:= ./ansible/ansible.cfg
 
@@ -14,7 +14,7 @@ assert-%:
 	    exit 1 ; 																															\
 	fi
 
-vpn:
+vault:
 	@ read -p "Enter AWS Profile Name: " profile  ; 													\
 																																						\
 	TF_VAR_aws_profile=$$profile make keypair 	&& 														\
@@ -43,15 +43,19 @@ require-jq:
 
 
 keypair:
-	yes y |ssh-keygen -q -N ''  -f _keys/ec2-key >/dev/null
+	yes y |ssh-keygen -q -N ''  -f _keys/vault-key >/dev/null
 
 ansible-roles:
 	ansible-galaxy install -r ansible/requirements.yml
 
-# aws --profile GEHC-030 --region us-west-2 ec2 describe-vpcs |jq -r '.[] | first | .VpcId' ##First VPC Id
-# aws --profile GEHC-030 --region us-west-2 ec2 describe-subnets --filters 'Name=vpc-id,Values=^whatevers up there' |jq -r '.[] | first | .SubnetId'
 build: require-packer
-	aws-vault exec $(TF_VAR_aws_profile) --assume-role-ttl=60m -- "/usr/local/bin/packer" "build" "packer/vault.json"
+	VPC=`aws --profile $(TF_VAR_aws_profile) --region us-west-2 ec2 describe-vpcs |jq -r '.[] | first | .VpcId'` 																							;
+	NET=`aws --profile $(TF_VAR_aws_profile) --region us-west-2 ec2 describe-subnets --filters \'Name=vpc-id,Values=$$VPC\' |jq -r '.[] | first | .SubnetId'` ;
+	echo $$VPC $$NET ;
+	aws-vault exec $(TF_VAR_aws_profile) --assume-role-ttl=60m -- \
+	"/usr/local/bin/packer" "build" "packer/vault.json"						\
+	"-var" "builder_vpc_id=$$VPC"																	\
+	"-var" ""
 
 
 plan: require-tf

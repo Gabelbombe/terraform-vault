@@ -17,11 +17,6 @@ variable "dr_region" {
   description = "The AWS Region to use for disaster recovery"
 }
 
-variable "aws_account_id" {
-  type        = "string"
-  description = "The account id of the AWS account to place resources in"
-}
-
 variable "tags" {
   type        = "map"
   description = "A map of tags to apply to all resources"
