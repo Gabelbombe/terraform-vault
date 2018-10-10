@@ -15,7 +15,7 @@ assert-%:
 	    exit 1 ; 																															\
 	fi
 
-vault:
+vault: ansible-roles
 	@ read -p "Enter AWS Profile Name: " profile ; 																																																							\
 	prvnet=`aws --profile "$${profile}" --region us-west-2 ec2 describe-vpcs |jq -r '.[] | first | .VpcId'` ; 																									\
 	subnet=`aws --profile "$${profile}" --region us-west-2 ec2 describe-subnets --filters "Name=vpc-id,Values=$${prvnet}" |jq -r '.[] | first | .SubnetId'` ; 	\
