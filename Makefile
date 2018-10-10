@@ -3,7 +3,7 @@ ANSIBLE_ROLES_PATH 	:= ./ansible/roles
 ANSIBLE_CONFIG 			:= ./ansible/ansible.cfg
 
 export ANSIBLE_CONFIG ANSIBLE_ROLES_PATH
-export TF_VAR_aws_profile
+export TF_VAR_aws_profile TF_VAR_aws_prvnet TF_VAR_aws_subnet
 
 
 # An implicit guard target, used by other targets to ensure
@@ -12,14 +12,29 @@ assert-%:
 	@ if [ "${${*}}" = "" ] ; then 																						\
 	    echo "Environment variable $* not set" ; 															\
 	    exit 1 ; 																															\
+		else 																																		\
+			export "$*=${${*}}" ; \
 	fi
 
 vault:
-	@ read -p "Enter AWS Profile Name: " profile  ; 													\
-																																						\
-	TF_VAR_aws_profile=$$profile make keypair 	&& 														\
-	TF_VAR_aws_profile=$$profile make apply 		&& 														\
-	TF_VAR_aws_profile=$$profile make reprovision
+	@ read -p "Enter AWS Profile Name: " profile ; 																																																							\
+	prvnet=`aws --profile "$${profile}" --region us-west-2 ec2 describe-vpcs |jq -r '.[] | first | .VpcId'` ; 																									\
+	subnet=`aws --profile "$${profile}" --region us-west-2 ec2 describe-subnets --filters "Name=vpc-id,Values=$${prvnet}" |jq -r '.[] | first | .SubnetId'` ; 	\
+	TF_VAR_aws_profile=$$profile TF_VAR_aws_prvnet=$$prvnet TF_VAR_aws_subnet=$$subnet make build && \
+	TF_VAR_aws_profile=$$profile make keypair && \
+	TF_VAR_aws_profile=$$profile make plan    && \
+	TF_VAR_aws_profile=$$profile make apply
+
+build: require-packer
+	aws-vault exec $(TF_VAR_aws_profile) --assume-role-ttl=60m -- \
+	"/usr/local/bin/packer" "build" "packer/vault.json"						\
+	"-var" "builder_subnet_id=$(TF_VAR_aws_subnet)" 							\
+	"-var" "builder_vpc_id=$(TF_VAR_aws_prvnet)"
+
+require-packer: assert-TF_VAR_aws_prvnet assert-TF_VAR_aws_subnet
+	@ echo "[info] VPC:  $(TF_VAR_aws_prvnet)" ;
+	@ echo "[info] NET:  $(TF_VAR_aws_subnet)" ;
+	packer --version &> /dev/null
 
 
 require-vault:
@@ -33,10 +48,6 @@ require-tf: assert-TF_VAR_aws_profile require-vault
 	terraform --version &> /dev/null
 	terraform init
 
-require-packer: require-packer
-	@ echo "[info] Profile:  $(TF_VAR_aws_profile)"
-	packer --version &> /dev/null
-
 require-jq:
 	jq --version &> /dev/null
 
@@ -47,15 +58,6 @@ keypair:
 
 ansible-roles:
 	ansible-galaxy install -r ansible/requirements.yml
-
-build: require-packer
-	VPC=`aws --profile $(TF_VAR_aws_profile) --region us-west-2 ec2 describe-vpcs |jq -r '.[] | first | .VpcId'` 																							;
-	NET=`aws --profile $(TF_VAR_aws_profile) --region us-west-2 ec2 describe-subnets --filters \'Name=vpc-id,Values=$$VPC\' |jq -r '.[] | first | .SubnetId'` ;
-	echo $$VPC $$NET ;
-	aws-vault exec $(TF_VAR_aws_profile) --assume-role-ttl=60m -- \
-	"/usr/local/bin/packer" "build" "packer/vault.json"						\
-	"-var" "builder_vpc_id=$$VPC"																	\
-	"-var" ""
 
 
 plan: require-tf
