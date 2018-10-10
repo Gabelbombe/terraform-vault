@@ -33,8 +33,8 @@ build: require-packer
 	"packer/vault.json"
 
 require-packer: assert-TF_VAR_aws_prvnet assert-TF_VAR_aws_subnet
-	@ echo "[info] VPC:  $(TF_VAR_aws_prvnet)" ;
-	@ echo "[info] NET:  $(TF_VAR_aws_subnet)" ;
+	@ echo "[info] VAR VPC:     $(TF_VAR_aws_prvnet)" ;
+	@ echo "[info] VAR Subnet:  $(TF_VAR_aws_subnet)" ;
 	packer --version &> /dev/null
 
 
@@ -45,7 +45,7 @@ require-ansible:
 	ansible --version &> /dev/null
 
 require-tf: assert-TF_VAR_aws_profile require-vault
-	@ echo "[info] Profile:  $(TF_VAR_aws_profile)"
+	@ echo "[info] VAR Profile:  $(TF_VAR_aws_profile)"
 	terraform --version &> /dev/null
 	terraform init
 
@@ -55,6 +55,7 @@ require-jq:
 
 
 keypair:
+	@ echo "[info] Building keypairs"
 	yes y |ssh-keygen -q -N ''  -f _keys/vault-key >/dev/null
 
 ansible-roles:
